@@ -4,6 +4,7 @@ import googleapiclient.discovery
 from pythainlp.tokenize import word_tokenize
 from pythainlp.tag import pos_tag
 from pythainlp.corpus import thai_stopwords
+import re
 
 youtube = googleapiclient.discovery.build("youtube", "v3", developerKey="AIzaSyDGLbBnxzKiMUJInY2cDbp_bEDGE0DXgHg")
 
@@ -25,12 +26,18 @@ def get_comments(video_id,keyword):
     file = open("{}_{}.txt".format(keyword,video_id),"w+",encoding="utf-8")
     data = str()
     stopwords = thai_stopwords()
-    print(stopwords)
     for i in comments:
         i = i.replace(" ","")
-        i = i.replace("\n","")
-        tokens = word_tokenize((i))
-        tokens = [i for i in tokens if i not in stopwords]
+        emoji_pattern = re.compile("["
+        u"\U0001F600-\U0001F64F"  # emoticons
+        u"\U0001F300-\U0001F5FF"  # symbols & pictographs
+        u"\U0001F680-\U0001F6FF"  # transport & map symbols
+        u"\U0001F1E0-\U0001F1FF"  # flags (iOS)
+                           "]+", flags=re.UNICODE)
+        txtClean = emoji_pattern.sub(r'', i)
+        txtClean = txtClean.replace("\n","")
+        tokens = word_tokenize((txtClean))
+        tokens = [txtClean for txtClean in tokens if txtClean not in stopwords]
         result = pos_tag(tokens)
         print(result)
         data+=i+"\n"
